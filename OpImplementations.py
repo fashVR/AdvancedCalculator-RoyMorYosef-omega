@@ -64,7 +64,6 @@ class CustomOpAt(Operator):
         super().__init__(precedence=5, associativity='left')
 
     def operate(self, operand1, operand2):
-        # Define operation for "@"
         pass
 
 
@@ -73,6 +72,5 @@ class CustomOpDollar(Operator):
         super().__init__(precedence=5, associativity='left')
 
     def operate(self, operand1, operand2):
-        # Define operation for "$"
         pass
 
