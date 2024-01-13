@@ -1,15 +1,17 @@
-
-def calc(expression):
-    postfixed = postfix(expression)
-    calced = calculate(postfixed)
-    return calced
+from ITPConverter import ITPConverter
 
 
 def receive_input():
-    while True:
-        expression = input()
-        try:
-            result = calc(expression)
-            print(result)
-        except ValueError as e:
-            print(e)
+    expression = input()
+
+
+def main():
+    infix_expression = input("Enter an infix expression: ")
+    converter = ITPConverter()
+    loc = converter.string_to_list_of_chars(infix_expression)
+    new_string = converter.analyze_minuses(loc)
+    print(new_string)
+
+
+if __name__ == "__main__":
+    main()
