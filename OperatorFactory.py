@@ -1,4 +1,5 @@
-import SingletonMeta
+from SingletonMeta import *
+from OpImplementations import *
 
 
 class OperatorFactory(metaclass=SingletonMeta):
@@ -6,9 +7,18 @@ class OperatorFactory(metaclass=SingletonMeta):
     def __init__(self):
         self.operators = {
             "+": Add,
-            "-": Subtract,
+            "-": BinaricMinus,
             "*": Multiply,
-            "/": Divide
+            "/": Divide,
+            "^": Power,
+            "_": UnaricMinus,
+            "%": Modulus,
+            "@": Avg,
+            "$": Max,
+            "&": Min,
+            "~": Tilde,
+            "!": Factorial,
+            "__": SignMinus
         }
 
     def get_operator(self, operator_symbol):

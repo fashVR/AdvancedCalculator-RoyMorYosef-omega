@@ -1,9 +1,12 @@
+from OperatorFactory import *
+
+
 class ITPConverter:
 
     def __init__(self):
-        self.stack = []
-        self.postfix = []
-        self.precedence = {"+": 1, "-": 1, "*": 2, "/": 2, "^": 3, "_": 3.5, "%": 4, "@": 5, "$": 5, "&": 5, "~": 6, "!": 6, "__": 7}
+        self.operator_factory = OperatorFactory()
+        self.precedence = {"+": 1, "-": 1, "*": 2, "/": 2, "^": 3, "_": 3.5, "%": 4, "@": 5, "$": 5, "&": 5, "~": 6,
+                           "!": 6, "__": 7}
 
     def string_to_list_of_chars(self, input_string):
         char_list = []
@@ -29,7 +32,6 @@ class ITPConverter:
         def is_operator_first(index):
             return char_list[index - 1].isdigit()
 
-        # Checks for unaric minuses and replaces them for '_'
         current_index = 1
         if char_list[0] == '-':
             char_list[0] = '_'
@@ -43,38 +45,92 @@ class ITPConverter:
                     char_list[current_index] = '__'
             current_index += 1
 
+        i = 0
+        while i < len(char_list):
+            if char_list[i] == '__':
+                start = i
+                while i < len(char_list) and char_list[i] == '__':
+                    i += 1
+                end = i
+                count = end - start
+                if count % 2 == 0:
+                    del char_list[start:end]
+                    i = start
+                else:
+                    char_list[start:end] = ['__']
+                    i = start + 1
+            else:
+                i += 1
+
+        i = 0
+        while i < len(char_list):
+            if char_list[i] == '_':
+                start = i
+                while i < len(char_list) and char_list[i] == '_':
+                    i += 1
+                end = i
+                count = end - start
+                if count % 2 == 0:
+                    del char_list[start:end]
+                    i = start
+                else:
+                    char_list[start:end] = ['_']
+                    i = start + 1
+            else:
+                i += 1
+
         return char_list
 
-    def postfix_evaluate(expression):
-        stack = []
+    def to_postfix(self, infix_expression):
+        op_stack = []
+        postfix = []
 
-        for token in expression.split():
-            if token.isdigit():  # Assuming the operands are integers
-                stack.append(int(token))
-            elif token in ['+', '-', '*', '/']:  # Binary operators
-                operand2 = stack.pop(-1)
-                operand1 = stack.pop(-1)
-                if token == '+':
-                    stack.append(operand1 + operand2)
-                elif token == '-':
-                    stack.append(operand1 - operand2)
-                elif token == '*':
-                    stack.append(operand1 * operand2)
-                elif token == '/':
-                    stack.append(operand1 / operand2)
-            elif token in ['~', '!']:  # Example unary operators
-                operand = stack.pop(-1)
-                if token == '~':  # Assuming ~ is a unary negation
-                    stack.append(-operand)
-                elif token == '!':  # Factorial as an example unary operation
-                    stack.append(math.factorial(operand))
+        for token in infix_expression:
+            if token.isdigit():
+                postfix.append(token)
+            elif token in ['(', ')']:
+                if token == '(':
+                    op_stack.append(token)
+                else:
+                    while op_stack and op_stack[-1] != '(':
+                        postfix.append(op_stack.pop())
+                    op_stack.pop()
+            else:
 
-        return stack.pop()
+                while op_stack and op_stack[-1] != '(' and self.compare_precedence(op_stack[-1], token):
+                    postfix.append(op_stack.pop())
+                op_stack.append(token)
 
-    # Example Usage
-    expression = "5 1 2 + 4 * + 3 -"
-    print(postfix_evaluate(expression))  # Example with binary operators
+        while op_stack:
+            postfix.append(op_stack.pop())
 
+        return postfix
+
+    def evaluate_postfix(self, postfix_expression):
+        operand_stack = []
+
+        for token in postfix_expression:
+            if token.isdigit():
+                operand_stack.append(int(token))
+            else:
+                operator = self.operator_factory.get_operator(token)
+
+                if operator.op_num == 2:
+                    operand2 = operand_stack.pop()
+                    operand1 = operand_stack.pop()
+                    result = operator.operate(operand1, operand2)
+                elif operator.op_num == 1:
+                    operand = operand_stack.pop()
+                    result = operator.operate(operand)
+
+                operand_stack.append(result)
+
+        return operand_stack.pop()
+
+    def compare_precedence(self, op1, op2):
+        op1_precedence = self.operator_factory.get_operator(op1).precedence
+        op2_precedence = self.operator_factory.get_operator(op2).precedence
+        return op1_precedence >= op2_precedence
 
     def isOperator(self, c):
         return c in self.precedence

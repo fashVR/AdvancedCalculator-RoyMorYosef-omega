@@ -1,4 +1,4 @@
-from ITPConverter import ITPConverter
+from ITPConverter import *
 
 
 def receive_input():
@@ -10,7 +10,9 @@ def main():
     converter = ITPConverter()
     loc = converter.string_to_list_of_chars(infix_expression)
     new_string = converter.analyze_minuses(loc)
-    print(new_string)
+    to_post = converter.to_postfix(new_string)
+    solvepost = converter.evaluate_postfix(to_post)
+    print(solvepost)
 
 
 if __name__ == "__main__":
