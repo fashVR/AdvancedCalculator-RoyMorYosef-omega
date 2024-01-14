@@ -11,8 +11,10 @@ def main():
     loc = converter.string_to_list_of_chars(infix_expression)
     new_string = converter.analyze_minuses(loc)
     to_post = converter.to_postfix(new_string)
-    solvepost = converter.evaluate_postfix(to_post)
-    print(solvepost)
+    calc = converter.evaluate_postfix(to_post)
+    print(to_post)
+
+    print(calc)
 
 
 if __name__ == "__main__":

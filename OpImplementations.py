@@ -1,9 +1,9 @@
 # OpImplementations.py
 
 class Operator:
-    def __init__(self, precedence, op_num):
+    def __init__(self, precedence, associativity):
         self.precedence = precedence
-        self.op_num = op_num
+        self.associativity = associativity
 
     def operate(self, *args):
         raise NotImplementedError("Subclasses must override the operate() method.")
@@ -12,7 +12,7 @@ class Operator:
 # '+'
 class Add(Operator):
     def __init__(self):
-        super().__init__(precedence=1, op_num=2)
+        super().__init__(precedence=1, associativity='middle')
 
     def operate(self, operand1, operand2):
         return operand1 + operand2
@@ -21,7 +21,7 @@ class Add(Operator):
 # '-'
 class BinaricMinus(Operator):
     def __init__(self):
-        super().__init__(precedence=1, op_num=2)
+        super().__init__(precedence=1, associativity='middle')
 
     def operate(self, operand1, operand2):
         return operand1 - operand2
@@ -30,7 +30,7 @@ class BinaricMinus(Operator):
 # '*'
 class Multiply(Operator):
     def __init__(self):
-        super().__init__(precedence=2, op_num=2)
+        super().__init__(precedence=2, associativity='middle')
 
     def operate(self, operand1, operand2):
         return operand1 * operand2
@@ -39,7 +39,7 @@ class Multiply(Operator):
 # '/'
 class Divide(Operator):
     def __init__(self):
-        super().__init__(precedence=2, op_num=2)
+        super().__init__(precedence=2, associativity='middle')
 
     def operate(self, operand1, operand2):
         if operand2 == 0:
@@ -50,7 +50,7 @@ class Divide(Operator):
 # '^'
 class Power(Operator):
     def __init__(self):
-        super().__init__(precedence=3, op_num=2)
+        super().__init__(precedence=3, associativity='middle')
 
     def operate(self, operand1, operand2):
         return operand1 ** operand2
@@ -59,7 +59,7 @@ class Power(Operator):
 # '_'
 class UnaricMinus(Operator):
     def __init__(self):
-        super().__init__(precedence=3.5, op_num=1)
+        super().__init__(precedence=3.5, associativity='left')
 
     def operate(self, operand):
         return -operand
@@ -68,7 +68,7 @@ class UnaricMinus(Operator):
 # '%'
 class Modulus(Operator):
     def __init__(self):
-        super().__init__(precedence=4, op_num=2)
+        super().__init__(precedence=4, associativity='middle')
 
     def operate(self, operand1, operand2):
         return operand1 % operand2
@@ -77,7 +77,7 @@ class Modulus(Operator):
 # '@'
 class Avg(Operator):
     def __init__(self):
-        super().__init__(precedence=5, op_num=2)
+        super().__init__(precedence=5, associativity='middle')
 
     def operate(self, operand1, operand2):
         return (operand1 + operand2) / 2
@@ -86,7 +86,7 @@ class Avg(Operator):
 # '$'
 class Max(Operator):
     def __init__(self):
-        super().__init__(precedence=5, op_num=2)
+        super().__init__(precedence=5, associativity='middle')
 
     def operate(self, operand1, operand2):
         if operand1 > operand2:
@@ -98,7 +98,7 @@ class Max(Operator):
 # '&'
 class Min(Operator):
     def __init__(self):
-        super().__init__(precedence=5, op_num=2)
+        super().__init__(precedence=5, associativity='middle')
 
     def operate(self, operand1, operand2):
         if operand1 > operand2:
@@ -110,7 +110,7 @@ class Min(Operator):
 # '~'
 class Tilde(Operator):
     def __init__(self):
-        super().__init__(precedence=6, op_num=1)
+        super().__init__(precedence=6, associativity='left')
 
     def operate(self, operand):
         return -operand
@@ -119,7 +119,7 @@ class Tilde(Operator):
 # '!'
 class Factorial(Operator):
     def __init__(self):
-        super().__init__(precedence=6, op_num=1)
+        super().__init__(precedence=6, associativity='right')
 
     def operate(self, operand1):
         if operand1 < 0:
@@ -134,7 +134,7 @@ class Factorial(Operator):
 # '__'
 class SignMinus(Operator):
     def __init__(self):
-        super().__init__(precedence=8, op_num=1)
+        super().__init__(precedence=8, associativity='left')
 
     def operate(self, operand):
         return -operand

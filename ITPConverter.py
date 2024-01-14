@@ -30,54 +30,53 @@ class ITPConverter:
     def analyze_minuses(self, char_list):
 
         def is_operator_first(index):
-            return char_list[index - 1].isdigit()
+            return char_list[index - 1].isdigit() or char_list[index - 1] in [')', '(']
 
-        current_index = 1
-        if char_list[0] == '-':
-            char_list[0] = '_'
-            while char_list[current_index] == '-':
-                char_list[current_index] = '_'
-                current_index += 1
+        def last_optr(index):
+            for i in range(index - 1, -1, -1):
+                if char_list[i] in self.operator_factory.operators:
+                    op_class = self.operator_factory.get_operator(char_list[i])
+                    return op_class
+            return None
+
+        def is_unaric(index):
+            return index == 0 or char_list[index - 1] == '_' or char_list[index - 1] == '('
+
+        def condense_characters(char_to_condense):
+            i = 0
+            while i < len(char_list):
+                if char_list[i] == char_to_condense:
+                    start = i
+                    while i < len(char_list) and char_list[i] == char_to_condense:
+                        i += 1
+                    end = i
+                    count = end - start
+                    if count % 2 == 0:  # Even count - remove all
+                        del char_list[start:end]
+                        i = start
+                    else:  # Odd count - keep one
+                        char_list[start:end] = [char_to_condense]
+                        i = start + 1
+                else:
+                    i += 1
+            return char_list
+
+        current_index = 0
 
         while current_index < len(char_list):
             if char_list[current_index] == '-':
                 if not is_operator_first(current_index):
-                    char_list[current_index] = '__'
+                    if last_optr(current_index).associativity != "right":
+                        char_list[current_index] = '__'
+
+                if is_unaric(current_index):
+                    char_list[current_index] = '_'
             current_index += 1
 
-        i = 0
-        while i < len(char_list):
-            if char_list[i] == '__':
-                start = i
-                while i < len(char_list) and char_list[i] == '__':
-                    i += 1
-                end = i
-                count = end - start
-                if count % 2 == 0:
-                    del char_list[start:end]
-                    i = start
-                else:
-                    char_list[start:end] = ['__']
-                    i = start + 1
-            else:
-                i += 1
-
-        i = 0
-        while i < len(char_list):
-            if char_list[i] == '_':
-                start = i
-                while i < len(char_list) and char_list[i] == '_':
-                    i += 1
-                end = i
-                count = end - start
-                if count % 2 == 0:
-                    del char_list[start:end]
-                    i = start
-                else:
-                    char_list[start:end] = ['_']
-                    i = start + 1
-            else:
-                i += 1
+        # Condense '__'
+        char_list = condense_characters('__')
+        # Condense '_'
+        char_list = condense_characters('_')
 
         return char_list
 
@@ -115,11 +114,11 @@ class ITPConverter:
             else:
                 operator = self.operator_factory.get_operator(token)
 
-                if operator.op_num == 2:
+                if operator.associativity == 'middle':
                     operand2 = operand_stack.pop()
                     operand1 = operand_stack.pop()
                     result = operator.operate(operand1, operand2)
-                elif operator.op_num == 1:
+                else:
                     operand = operand_stack.pop()
                     result = operator.operate(operand)
 
@@ -131,9 +130,3 @@ class ITPConverter:
         op1_precedence = self.operator_factory.get_operator(op1).precedence
         op2_precedence = self.operator_factory.get_operator(op2).precedence
         return op1_precedence >= op2_precedence
-
-    def isOperator(self, c):
-        return c in self.precedence
-
-    def precedence_level(self, operator):
-        return self.precedence.get(operator, 0)
