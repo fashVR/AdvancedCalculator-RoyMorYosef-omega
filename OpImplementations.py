@@ -137,8 +137,11 @@ class Factorial(Operator):
         if operand1 < 0:
             raise OperatorError("Factorial is not defined for negative numbers", self)
 
+        if operand1 != int(operand1):
+            raise OperatorError("Factorial is not defined for non-integer numbers", self)
+
         result = 1
-        for i in range(1, operand1 + 1):
+        for i in range(1, int(operand1) + 1):
             result *= i
         return result
 
