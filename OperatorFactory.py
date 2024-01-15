@@ -7,11 +7,11 @@ class OperatorFactory(metaclass=SingletonMeta):
     def __init__(self):
         self.operators = {
             "+": Add,
-            "-": BinaricMinus,
+            "-": BinaryMinus,
             "*": Multiply,
             "/": Divide,
             "^": Power,
-            "_": UnaricMinus,
+            "_": UnaryMinus,
             "%": Modulus,
             "@": Avg,
             "$": Max,

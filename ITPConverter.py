@@ -1,3 +1,4 @@
+from CustomeExceptions import *
 from OperatorFactory import *
 
 
@@ -11,16 +12,18 @@ class ITPConverter:
     def string_to_list_of_chars(self, input_string):
         char_list = []
         current_number = ''
+        operators = self.operator_factory.operators
 
         for char in input_string:
-            if char.isdigit():
-                current_number += char
-            else:
+            if char == ' ':
+                continue
+            if char in operators or char in ['(', ')']:
                 if current_number:
                     char_list.append(current_number)
                     current_number = ''
-
                 char_list.append(char)
+            else:
+                current_number += char
 
         if current_number:
             char_list.append(current_number)
@@ -30,7 +33,7 @@ class ITPConverter:
     def analyze_minuses(self, char_list):
 
         def is_operator_first(index):
-            return char_list[index - 1].isdigit() or char_list[index - 1] in [')', '(']
+            return char_list[index - 1][0].isdigit() or char_list[index - 1] in [')', '(']
 
         def last_optr(index):
             for i in range(index - 1, -1, -1):
@@ -39,8 +42,20 @@ class ITPConverter:
                     return op_class
             return None
 
-        def is_unaric(index):
-            return index == 0 or char_list[index - 1] == '_' or char_list[index - 1] == '('
+        def no_operator_separating(index):
+            found = False
+            reached = False
+            while not found and not reached and index < len(char_list) -1:
+                index += 1
+                if char_list[index] == char_list[index - 1][0].isdigit():
+                    reached = True
+                elif (char_list[index] in self.operator_factory.operators and
+                      not isinstance(self.operator_factory.get_operator(char_list[index]), Minus)):
+                    found = True
+            return not found
+
+        def is_unary(index):
+            return (index == 0 and no_operator_separating(index)) or char_list[index - 1] == '_' or (char_list[index - 1] == '(' and no_operator_separating(index))
 
         def condense_characters(char_to_condense):
             i = 0
@@ -69,7 +84,7 @@ class ITPConverter:
                     if last_optr(current_index).associativity != "right":
                         char_list[current_index] = '__'
 
-                if is_unaric(current_index):
+                if is_unary(current_index):
                     char_list[current_index] = '_'
             current_index += 1
 
@@ -84,21 +99,21 @@ class ITPConverter:
         op_stack = []
         postfix = []
 
-        for token in infix_expression:
-            if token.isdigit():
-                postfix.append(token)
-            elif token in ['(', ')']:
-                if token == '(':
-                    op_stack.append(token)
+        for char in infix_expression:
+            if char[0].isdigit():
+                postfix.append(char)
+            elif char in ['(', ')']:
+                if char == '(':
+                    op_stack.append(char)
                 else:
                     while op_stack and op_stack[-1] != '(':
                         postfix.append(op_stack.pop())
                     op_stack.pop()
             else:
 
-                while op_stack and op_stack[-1] != '(' and self.compare_precedence(op_stack[-1], token):
+                while op_stack and op_stack[-1] != '(' and self.compare_precedence(op_stack[-1], char):
                     postfix.append(op_stack.pop())
-                op_stack.append(token)
+                op_stack.append(char)
 
         while op_stack:
             postfix.append(op_stack.pop())
@@ -108,20 +123,23 @@ class ITPConverter:
     def evaluate_postfix(self, postfix_expression):
         operand_stack = []
 
-        for token in postfix_expression:
-            if token.isdigit():
-                operand_stack.append(int(token))
+        for char in postfix_expression:
+            if char[0].isdigit():
+                operand_stack.append(float(char))
             else:
-                operator = self.operator_factory.get_operator(token)
+                operator = self.operator_factory.get_operator(char)
 
-                if operator.associativity == 'middle':
-                    operand2 = operand_stack.pop()
-                    operand1 = operand_stack.pop()
-                    result = operator.operate(operand1, operand2)
-                else:
-                    operand = operand_stack.pop()
-                    result = operator.operate(operand)
+                try:
+                    if operator.associativity == 'middle':
+                        operand2 = operand_stack.pop()
+                        operand1 = operand_stack.pop()
+                        result = operator.operate(operand1, operand2)
+                    else:
+                        operand = operand_stack.pop()
+                        result = operator.operate(operand)
 
+                except IndexError:
+                    raise OperatorError(f"Incorrect use of operator", operator)
                 operand_stack.append(result)
 
         return operand_stack.pop()
