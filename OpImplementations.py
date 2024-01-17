@@ -3,19 +3,42 @@ from CustomeExceptions import *
 
 
 class Operator:
-    def __init__(self, precedence, associativity, name):
+    def __init__(self, precedence, name):
         self.precedence = precedence
-        self.associativity = associativity
         self.name = name
 
     def operate(self, *args):
         raise NotImplementedError("Subclasses must override the operate() method.")
 
 
+class Unary(Operator):
+    LEFT = 'Left'
+    RIGHT = 'Right'
+    VALID_ASSOCIATIVITIES = (LEFT, RIGHT)
+
+    def __init__(self, precedence, associativity, duplicatable, name):
+        super().__init__(precedence, name)
+        if associativity not in self.VALID_ASSOCIATIVITIES:
+            raise ValueError(f"Associativity must be one of {self.VALID_ASSOCIATIVITIES}")
+        self.associativity = associativity
+        self.duplicatable = duplicatable
+
+    def operate(self, operand):
+        raise NotImplementedError("Subclasses must override the operate() method.")
+
+
+class Binary(Operator):
+    def __init__(self, precedence, name):
+        super().__init__(precedence, name)
+
+    def operate(self, operand1, operand2):
+        raise NotImplementedError("Subclasses must override the operate() method.")
+
+
 # '+'
-class Add(Operator):
+class Add(Binary):
     def __init__(self):
-        super().__init__(precedence=1, associativity='middle', name="Plus: (+)")
+        super().__init__(precedence=1, name="Plus: (+)")
 
     def operate(self, operand1, operand2):
         return operand1 + operand2
@@ -23,64 +46,57 @@ class Add(Operator):
 
 # '-'
 
-class Minus(Operator):
-    def __init__(self, precedence, associativity):
-        super().__init__(precedence, associativity, name="Minus: (-)")
 
-    def operate(self, *args):
-        raise NotImplementedError("Subclasses must override the operate() method.")
-
-
-class BinaryMinus(Minus):
+class BinaryMinus(Binary):
     def __init__(self):
-        super().__init__(precedence=1, associativity='middle')
+        super().__init__(precedence=1, name='Minus: (-)')
 
     def operate(self, operand1, operand2):
         return operand1 - operand2
 
 
 # '*'
-class Multiply(Operator):
+class Multiply(Binary):
     def __init__(self):
-        super().__init__(precedence=2, associativity='middle', name="Multiplication: (*)")
+        super().__init__(precedence=2, name="Multiplication: (*)")
 
     def operate(self, operand1, operand2):
         return operand1 * operand2
 
 
 # '/'
-class Divide(Operator):
+class Divide(Binary):
     def __init__(self):
-        super().__init__(precedence=2, associativity='middle', name="Division: (/)")
+        super().__init__(precedence=2, name="Division: (/)")
 
     def operate(self, operand1, operand2):
         if operand2 == 0:
-            raise ValueError("Cannot divide by zero.")
+            raise ZeroDivisionError("Cannot divide by zero.")
         return operand1 / operand2
 
 
 # '^'
-class Power(Operator):
+class Power(Binary):
     def __init__(self):
-        super().__init__(precedence=3, associativity='middle', name="Power: (^)")
+        super().__init__(precedence=3, name="Power: (^)")
 
     def operate(self, operand1, operand2):
         return operand1 ** operand2
 
 
 # '_'
-class UnaryMinus(Minus):
+class UnaryMinus(Unary):
     def __init__(self):
-        super().__init__(precedence=3.5, associativity='left')
+        super().__init__(precedence=3.5, associativity='Left', duplicatable=True, name='Minus: (-)')
 
     def operate(self, operand):
         return -operand
 
 
 # '%'
-class Modulus(Operator):
+class Modulus(Binary):
     def __init__(self):
-        super().__init__(precedence=4, associativity='middle', name="Modulus: (-)")
+        super().__init__(precedence=4, name="Modulus: (-)")
 
     def operate(self, operand1, operand2):
         return operand1 % operand2
@@ -89,7 +105,7 @@ class Modulus(Operator):
 # '@'
 class Avg(Operator):
     def __init__(self):
-        super().__init__(precedence=5, associativity='middle', name="Average: (@)")
+        super().__init__(precedence=5, name="Average: (@)")
 
     def operate(self, operand1, operand2):
         return (operand1 + operand2) / 2
@@ -98,7 +114,7 @@ class Avg(Operator):
 # '$'
 class Max(Operator):
     def __init__(self):
-        super().__init__(precedence=5, associativity='middle', name="Maximum: ($)")
+        super().__init__(precedence=5, name="Maximum: ($)")
 
     def operate(self, operand1, operand2):
         if operand1 > operand2:
@@ -110,7 +126,7 @@ class Max(Operator):
 # '&'
 class Min(Operator):
     def __init__(self):
-        super().__init__(precedence=5, associativity='middle', name="Minimum: (&)")
+        super().__init__(precedence=5, name="Minimum: (&)")
 
     def operate(self, operand1, operand2):
         if operand1 > operand2:
@@ -122,16 +138,16 @@ class Min(Operator):
 # '~'
 class Tilde(Operator):
     def __init__(self):
-        super().__init__(precedence=6, associativity='left', name="Tilde: (~)")
+        super().__init__(precedence=6, name="Tilde: (~)")
 
     def operate(self, operand):
         return -operand
 
 
 # '!'
-class Factorial(Operator):
+class Factorial(Unary):
     def __init__(self):
-        super().__init__(precedence=6, associativity='right', name="Factorial: (!)")
+        super().__init__(precedence=6, associativity='Right', duplicatable=True, name="Factorial: (!)")
 
     def operate(self, operand1):
         if operand1 < 0:
@@ -147,9 +163,9 @@ class Factorial(Operator):
 
 
 # '__'
-class SignMinus(Minus):
+class SignMinus(Unary):
     def __init__(self):
-        super().__init__(precedence=8, associativity='left')
+        super().__init__(precedence=8, associativity='Left', duplicatable=True, name='Minus: (-)')
 
     def operate(self, operand):
         return -operand

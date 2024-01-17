@@ -36,7 +36,7 @@ def main():
         check_valid_nums(expression_list)
         fixed_minuses = converter.analyze_minuses(expression_list)
         print(fixed_minuses)
-        check = converter.fix_unary_operators(fixed_minuses)
+        check = converter.unary_operators_exception(fixed_minuses)
         print(check)
         post_fixed = converter.to_postfix(fixed_minuses)
         print(post_fixed)

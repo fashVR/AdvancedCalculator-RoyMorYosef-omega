@@ -61,7 +61,7 @@ class ITPConverter:
                     if not check_right_unary(i, char):
                         raise ValueError(f"Incorrect placement of {char}")
 
-    def fix_unary_operators(self, input_string):
+    def unary_operators_exception(self, input_string):
 
         def check_right_unary(index, op_char):
             for j in range(index - 1, -1, -1):
@@ -81,13 +81,13 @@ class ITPConverter:
 
         for i, char in enumerate(input_string):
             if char in self.operator_factory.operators:
-                if self.operator_factory.get_operator(char).associativity == "right":
-                    if not check_right_unary(i, char):
-                        raise ValueError(f"Incorrect placement of {char}")
-            if char in self.operator_factory.operators:
-                if self.operator_factory.get_operator(char).associativity == "left":
-                    if not check_left_unary(i, char):
-                        raise ValueError(f"Incorrect placement of {char}")
+                if isinstance(self.operator_factory.get_operator(char), Unary):
+                    if self.operator_factory.get_operator(char).associativity == "Right":
+                        if not check_right_unary(i, char):
+                            raise ValueError(f"Incorrect placement of {char}")
+                    elif self.operator_factory.get_operator(char).associativity == "Left":
+                        if not check_left_unary(i, char):
+                            raise ValueError(f"Incorrect placement of {char}")
 
     def analyze_minuses(self, char_list):
 
@@ -108,8 +108,7 @@ class ITPConverter:
                 index += 1
                 if char_list[index - 1][0].isdigit():
                     reached = True
-                elif (char_list[index] in self.operator_factory.operators and
-                      not isinstance(self.operator_factory.get_operator(char_list[index]), Minus)):
+                elif char_list[index] in self.operator_factory.operators and not char_list[index] == '-':
                     found = True
             return not found
 
@@ -144,7 +143,11 @@ class ITPConverter:
                     char_list[current_index] = '_'
 
                 elif not is_operator_first(current_index):
-                    if last_optr(current_index).associativity != "right":
+                    last_operator = last_optr(current_index)
+                    if isinstance(last_operator, Unary):
+                        if last_optr(current_index).associativity != "Right":
+                            char_list[current_index] = '__'
+                    if isinstance(last_operator, Binary):
                         char_list[current_index] = '__'
             current_index += 1
 
@@ -190,7 +193,7 @@ class ITPConverter:
                 operator = self.operator_factory.get_operator(char)
 
                 try:
-                    if operator.associativity == 'middle':
+                    if isinstance(operator, Binary):
                         operand2 = operand_stack.pop()
                         operand1 = operand_stack.pop()
                         result = operator.operate(operand1, operand2)
