@@ -136,9 +136,9 @@ class Min(Operator):
 
 
 # '~'
-class Tilde(Operator):
+class Tilde(Unary):
     def __init__(self):
-        super().__init__(precedence=6, name="Tilde: (~)")
+        super().__init__(precedence=6, associativity='Left', duplicatable=True, name="Tilde: (~)")
 
     def operate(self, operand):
         return -operand

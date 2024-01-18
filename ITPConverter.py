@@ -159,6 +159,11 @@ class ITPConverter:
         return char_list
 
     def to_postfix(self, infix_expression):
+        def compare_precedence(op1, op2):
+            op1_precedence = self.operator_factory.get_operator(op1).precedence
+            op2_precedence = self.operator_factory.get_operator(op2).precedence
+            return op1_precedence >= op2_precedence
+
         op_stack = []
         postfix = []
 
@@ -173,9 +178,14 @@ class ITPConverter:
                         postfix.append(op_stack.pop())
                     op_stack.pop()
             else:
+                optr = self.operator_factory.get_operator(char)
+                if op_stack and op_stack[-1] == char:
+                    if not isinstance(optr, Unary) or not optr.duplicatable:
+                        raise ValueError("Error: non duplicatable unary operator")
 
-                while op_stack and op_stack[-1] != '(' and self.compare_precedence(op_stack[-1], char):
-                    postfix.append(op_stack.pop())
+                if not op_stack or not (op_stack[-1] == char and isinstance(optr, Unary) and optr.duplicatable):
+                    while op_stack and op_stack[-1] != '(' and compare_precedence(op_stack[-1], char):
+                        postfix.append(op_stack.pop())
                 op_stack.append(char)
 
         while op_stack:
@@ -207,7 +217,3 @@ class ITPConverter:
 
         return operand_stack.pop()
 
-    def compare_precedence(self, op1, op2):
-        op1_precedence = self.operator_factory.get_operator(op1).precedence
-        op2_precedence = self.operator_factory.get_operator(op2).precedence
-        return op1_precedence >= op2_precedence
