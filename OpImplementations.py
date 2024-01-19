@@ -16,12 +16,13 @@ class Unary(Operator):
     RIGHT = 'Right'
     VALID_ASSOCIATIVITIES = (LEFT, RIGHT)
 
-    def __init__(self, precedence, associativity, duplicatable, name):
+    def __init__(self, precedence, associativity, repeatable, stackable_on_others, name):
         super().__init__(precedence, name)
+        self.stackable_on_others = stackable_on_others
         if associativity not in self.VALID_ASSOCIATIVITIES:
             raise ValueError(f"Associativity must be one of {self.VALID_ASSOCIATIVITIES}")
         self.associativity = associativity
-        self.duplicatable = duplicatable
+        self.repeatable = repeatable
 
     def operate(self, operand):
         raise NotImplementedError("Subclasses must override the operate() method.")
@@ -81,13 +82,16 @@ class Power(Binary):
         super().__init__(precedence=3, name="Power: (^)")
 
     def operate(self, operand1, operand2):
+        if operand1 == 0 and operand2 < 0:
+            raise ZeroDivisionError(f"0 cant be raised ny a negative number: ({operand2})")
         return operand1 ** operand2
 
 
 # '_'
 class UnaryMinus(Unary):
     def __init__(self):
-        super().__init__(precedence=3.5, associativity='Left', duplicatable=True, name='Minus: (-)')
+        super().__init__(precedence=3.5, associativity='Left', repeatable=True, stackable_on_others=False,
+                         name='Minus: (-)')
 
     def operate(self, operand):
         return -operand
@@ -138,7 +142,8 @@ class Min(Operator):
 # '~'
 class Tilde(Unary):
     def __init__(self):
-        super().__init__(precedence=6, associativity='Left', duplicatable=True, name="Tilde: (~)")
+        super().__init__(precedence=6, associativity='Left', repeatable=False, stackable_on_others=True,
+                         name="Tilde: (~)")
 
     def operate(self, operand):
         return -operand
@@ -147,7 +152,8 @@ class Tilde(Unary):
 # '!'
 class Factorial(Unary):
     def __init__(self):
-        super().__init__(precedence=6, associativity='Right', duplicatable=True, name="Factorial: (!)")
+        super().__init__(precedence=6, associativity='Right', repeatable=True, stackable_on_others=True,
+                         name="Factorial: (!)")
 
     def operate(self, operand1):
         if operand1 < 0:
@@ -165,7 +171,8 @@ class Factorial(Unary):
 # '__'
 class SignMinus(Unary):
     def __init__(self):
-        super().__init__(precedence=8, associativity='Left', duplicatable=True, name='Minus: (-)')
+        super().__init__(precedence=8, associativity='Left', repeatable=True, stackable_on_others=False,
+                         name='Minus: (-)')
 
     def operate(self, operand):
         return -operand

@@ -62,8 +62,30 @@ class ITPConverter:
                         raise ValueError(f"Incorrect placement of {char}")
 
     def unary_operators_exception(self, input_string):
+        """
+        checks for correct placement of right and left unary operators.
+        :param input_string: the string representing the expression
+        :return: True if all unary operators are placed correctly, False if not.
+        """
+        cur_index = 0
 
         def check_right_unary(index, op_char):
+            """
+            Checks if a right unary operator is correctly placed in an expression.
+
+            Parameters:
+            :param: index (int): The index of the right unary operator in the expression.
+            :param: op_char (str): The character representing the right unary operator.
+
+            :returns:
+                    True if the unary operator has a correctly placed corresponding operand (the operand
+                    is immediately to the left of the operator, possibly separated by repeated instances of the
+                    same operator) and there is no number after him. False if there is another different operator
+                    separating the unary operator from its operand, or if there is no operand for the unary operator.
+            """
+            if index < len(input_string) - 1:
+                if input_string[index + 1][0].isdigit():
+                    return False
             for j in range(index - 1, -1, -1):
                 if input_string[j] != op_char:
                     if input_string[j][0].isdigit() or input_string[j][0] == ')':
@@ -72,6 +94,22 @@ class ITPConverter:
             return False
 
         def check_left_unary(index, op_char):
+            """
+            Checks if a left unary operator is correctly placed in an expression.
+
+            Parameters:
+            :param: index (int): The index of the left unary operator in the expression.
+            :param: op_char (str): The character representing the left unary operator.
+
+            :returns:
+                    True if the unary operator has a correctly placed corresponding operand (the operand
+                    is immediately to the right of the operator, possibly separated by repeated instances of the
+                    same operator) and there is no number before him. False if there is another different operator
+                    separating the unary operator from its operand, or if there is no operand for the unary operator.
+            """
+            if index > 0:
+                if input_string[index - 1][0].isdigit():
+                    return False
             for j in range(index + 1, len(input_string)):
                 if input_string[j] != op_char:
                     if input_string[j][0].isdigit() or input_string[j][0] == '(':
@@ -79,15 +117,18 @@ class ITPConverter:
                     return False
             return False
 
-        for i, char in enumerate(input_string):
+        while cur_index < len(input_string):
+            char = input_string[cur_index]
             if char in self.operator_factory.operators:
-                if isinstance(self.operator_factory.get_operator(char), Unary):
-                    if self.operator_factory.get_operator(char).associativity == "Right":
-                        if not check_right_unary(i, char):
+                optr = self.operator_factory.get_operator(char)
+                if isinstance(optr, Unary):
+                    if optr.associativity == "Right":
+                        if not check_right_unary(cur_index, char):
                             raise ValueError(f"Incorrect placement of {char}")
-                    elif self.operator_factory.get_operator(char).associativity == "Left":
-                        if not check_left_unary(i, char):
+                    elif optr.associativity == "Left":
+                        if not check_left_unary(cur_index, char):
                             raise ValueError(f"Incorrect placement of {char}")
+            cur_index += 1
 
     def analyze_minuses(self, char_list):
 
@@ -113,27 +154,9 @@ class ITPConverter:
             return not found
 
         def is_unary(index):
-            return (index == 0 and no_operator_separating(index)) or char_list[index - 1] == '_' or (
-                    char_list[index - 1] == '(' and no_operator_separating(index))
-
-        def condense_characters(char_to_condense):
-            i = 0
-            while i < len(char_list):
-                if char_list[i] == char_to_condense:
-                    start = i
-                    while i < len(char_list) and char_list[i] == char_to_condense:
-                        i += 1
-                    end = i
-                    count = end - start
-                    if count % 2 == 0:  # Even count - remove all
-                        del char_list[start:end]
-                        i = start
-                    else:  # Odd count - keep one
-                        char_list[start:end] = [char_to_condense]
-                        i = start + 1
-                else:
-                    i += 1
-            return char_list
+            # return (index == 0 and no_operator_separating(index)) or char_list[index - 1] == '_' or (
+            # char_list[index - 1] == '(' and no_operator_separating(index))
+            return index == 0 or char_list[index - 1] == '_' or char_list[index - 1] == '('
 
         current_index = 0
 
@@ -151,11 +174,6 @@ class ITPConverter:
                         char_list[current_index] = '__'
             current_index += 1
 
-        # Condense '__'
-        char_list = condense_characters('__')
-        # Condense '_'
-        char_list = condense_characters('_')
-
         return char_list
 
     def to_postfix(self, infix_expression):
@@ -164,9 +182,20 @@ class ITPConverter:
             op2_precedence = self.operator_factory.get_operator(op2).precedence
             return op1_precedence >= op2_precedence
 
+        def insert_operator():
+            # Find the position in the stack where the operator should be inserted
+            insert_position = 0
+            for i in range(len(op_stack) - 1, -1, -1):
+                if op_stack[i] == '(' or self.operator_factory.get_operator(op_stack[i]).precedence < self.operator_factory.get_operator(char).precedence:
+                    insert_position = i + 1
+                    break
+
+            # Insert the operator at the found position
+            op_stack.insert(insert_position, char)
+
         op_stack = []
         postfix = []
-
+        latest_operator_inserted = ''
         for char in infix_expression:
             if char[0].isdigit():
                 postfix.append(char)
@@ -178,16 +207,37 @@ class ITPConverter:
                         postfix.append(op_stack.pop())
                     op_stack.pop()
             else:
-                optr = self.operator_factory.get_operator(char)
-                if op_stack and op_stack[-1] == char:
-                    if not isinstance(optr, Unary) or not optr.duplicatable:
-                        raise ValueError("Error: non duplicatable unary operator")
+                if op_stack:
+                    optr = self.operator_factory.get_operator(char)
+                    iterate_as_normal = True
 
-                if not op_stack or not (op_stack[-1] == char and isinstance(optr, Unary) and optr.duplicatable):
-                    while op_stack and op_stack[-1] != '(' and compare_precedence(op_stack[-1], char):
-                        postfix.append(op_stack.pop())
-                op_stack.append(char)
+                    if latest_operator_inserted == char:
+                        if isinstance(optr, Unary) and optr.repeatable:
+                            iterate_as_normal = False
+                        else:
+                            raise OperatorError("Error: non repeatable operator", optr)
+                    elif isinstance(optr, Unary):
+                        if isinstance(self.operator_factory.get_operator(latest_operator_inserted), Unary):
+                            if self.operator_factory.get_operator(latest_operator_inserted).associativity == "Left":
+                                if optr.associativity == "Left":
+                                    if self.operator_factory.get_operator(latest_operator_inserted).stackable_on_others:
+                                        iterate_as_normal = False
+                                    else:
+                                        raise OperatorError("Error: can't stack this operator on others",
+                                                            self.operator_factory.get_operator(
+                                                                latest_operator_inserted))
+                            if self.operator_factory.get_operator(latest_operator_inserted).associativity == "Right":
+                                if optr.associativity == "Right":
+                                    if not optr.stackable_on_others:
+                                        raise OperatorError("Error: can't stack this operator on others", optr)
 
+                    # pushes to the postfix expression all the operators in the op_stack that their precedence is bigger
+                    # than the new operator
+                    if iterate_as_normal:
+                        while op_stack and op_stack[-1] != '(' and compare_precedence(op_stack[-1], char):
+                            postfix.append(op_stack.pop())
+                insert_operator()
+                latest_operator_inserted = char
         while op_stack:
             postfix.append(op_stack.pop())
 
@@ -214,6 +264,5 @@ class ITPConverter:
                 except IndexError:
                     raise OperatorError(f"Incorrect use of operator", operator)
                 operand_stack.append(result)
-
+        print(operand_stack)
         return operand_stack.pop()
-

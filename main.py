@@ -36,8 +36,6 @@ def main():
         check_valid_nums(expression_list)
         fixed_minuses = converter.analyze_minuses(expression_list)
         print(fixed_minuses)
-        check = converter.unary_operators_exception(fixed_minuses)
-        print(check)
         post_fixed = converter.to_postfix(fixed_minuses)
         print(post_fixed)
         res = converter.evaluate_postfix(post_fixed)
@@ -52,6 +50,8 @@ def main():
         print(f"Error | Keyboard Interrupt")
     except EOFError:
         print(f"Error | End Of File Error")
+    except ZeroDivisionError as e:
+        print(f"Error | {e}")
     except ValueError as e:
         print(f"Error | {e}")
 
