@@ -1,18 +1,19 @@
-from ITPConverter import *
-from InputValidation import *
+from InputHandling.InputProcessingUtilz import *
+from InputHandling.InputValidationUtilz import *
+from Calculator.ITPConverter import *
 
 
 def main():
     try:
+        operator_factory = OperatorFactory()
         infix_expression = input("Enter an infix expression: ")
-        converter = ITPConverter()
-        expression_list = converter.string_to_list(infix_expression)
-        check_parentheses(expression_list)
-        converter.clean_list(expression_list)
-        fixed_minuses = converter.analyze_minuses(expression_list)
-        converter.validate_unary_operators(fixed_minuses)
-        post_fixed = converter.to_postfix(fixed_minuses)
-        res = converter.evaluate_postfix(post_fixed)
+        expression_list = InputProcessingUtilz.string_to_list(infix_expression, operator_factory)
+        InputProcessingUtilz.clean_list(expression_list)
+        InputValidationUtilz.check_parentheses(expression_list)
+        fixed_minuses = ITPConverter.analyze_minuses(expression_list)
+        InputValidationUtilz.validate_unary_operators(fixed_minuses)
+        post_fixed = ITPConverter.to_postfix(fixed_minuses)
+        res = ITPConverter.evaluate_postfix(post_fixed)
         print(res)
 
     except ParenthesesMismatchError as e:

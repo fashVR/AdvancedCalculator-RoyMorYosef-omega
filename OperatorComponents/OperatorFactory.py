@@ -1,8 +1,8 @@
-from SingletonMeta import *
-from OpImplementations import *
+from OperatorComponents.OpImplementations import *
+from OperatorComponents.SingletonMeta import *
 
 
-class OperatorFactory(metaclass=SingletonMeta):
+class OperatorFactory(metaclass= SingletonMeta):
     """
     A factory class for creating instances of operator classes. This class follows the Singleton design pattern
     to ensure only one instance exists throughout the program. It holds a mapping of operator symbols
@@ -14,8 +14,8 @@ class OperatorFactory(metaclass=SingletonMeta):
         """
         Initializes the OperatorFactory with a predefined set of operator mappings.
         The mappings include symbols for various operators such as addition, subtraction, multiplication,
-        division, power...
-
+        division, power... it initializes all the operator classes so when retrieving them there will remain only one
+        instance of an operator created.
         :param operators: A dictionary mapping operator symbols (str) to their operator classes.
         """
         self.operators = {

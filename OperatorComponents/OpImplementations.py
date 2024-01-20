@@ -1,5 +1,6 @@
 # OpImplementations.py
-from CustomeExceptions import *
+from Calculator.CustomeExceptions import *
+from OperatorComponents.SingletonMeta import *
 
 
 class Operator:
@@ -80,7 +81,7 @@ class Binary(Operator):
 
 
 # '+'
-class Add(Binary):
+class Add(Binary, metaclass=SingletonMeta):
     """
     Class representing the addition operator.
 
@@ -105,7 +106,7 @@ class Add(Binary):
 # '-'
 
 
-class BinaryMinus(Binary):
+class BinaryMinus(Binary, metaclass=SingletonMeta):
     """
     Class representing the binary minus operator.
 
@@ -128,7 +129,7 @@ class BinaryMinus(Binary):
 
 
 # '*'
-class Multiply(Binary):
+class Multiply(Binary, metaclass=SingletonMeta):
     """
     Class representing the multiplication operator.
 
@@ -151,7 +152,7 @@ class Multiply(Binary):
 
 
 # '/'
-class Divide(Binary):
+class Divide(Binary, metaclass=SingletonMeta):
     """
     Class representing the division operator.
 
@@ -178,7 +179,7 @@ class Divide(Binary):
 
 
 # '^'
-class Power(Binary):
+class Power(Binary, metaclass=SingletonMeta):
     """
     Class representing the exponentiation operator.
 
@@ -204,7 +205,7 @@ class Power(Binary):
 
 
 # 'UNARY_MINUS'
-class UnaryMinus(Unary):
+class UnaryMinus(Unary, metaclass=SingletonMeta):
     """
         Class representing the unary minus operator.
 
@@ -215,7 +216,8 @@ class UnaryMinus(Unary):
         :param name: The display name of the operator, set to "Minus: (-)".
         """
     def __init__(self):
-        super().__init__(precedence=3.5, associativity='Left', repeatable=True, stackable_on_others=False,
+
+        super().__init__(precedence=2.5, associativity='Left', repeatable=True, stackable_on_others=False,
                          name='Minus: (-)')
 
     def operate(self, operand):
@@ -229,7 +231,7 @@ class UnaryMinus(Unary):
 
 
 # '%'
-class Modulus(Binary):
+class Modulus(Binary, metaclass=SingletonMeta):
     """
     Class representing the modulus operator.
 
@@ -251,7 +253,7 @@ class Modulus(Binary):
 
 
 # '@'
-class Avg(Operator):
+class Avg(Binary, metaclass=SingletonMeta):
     """
     Class representing the average operator.
 
@@ -273,7 +275,7 @@ class Avg(Operator):
 
 
 # '$'
-class Max(Operator):
+class Max(Binary, metaclass=SingletonMeta):
     """
     Class representing the maximum operator.
 
@@ -298,7 +300,7 @@ class Max(Operator):
 
 
 # '&'
-class Min(Operator):
+class Min(Operator, metaclass=SingletonMeta):
     """
     Class representing the minimum operator.
 
@@ -323,7 +325,7 @@ class Min(Operator):
 
 
 # '~'
-class Tilde(Unary):
+class Tilde(Unary, metaclass=SingletonMeta):
     """
     Class representing the tilde operator.
 
@@ -348,7 +350,7 @@ class Tilde(Unary):
 
 
 # '!'
-class Factorial(Unary):
+class Factorial(Unary, metaclass=SingletonMeta):
     """
     Class representing the factorial operator.
 
@@ -385,7 +387,7 @@ class Factorial(Unary):
 
 
 # '#'
-class DigitSum(Unary):
+class DigitSum(Unary, metaclass=SingletonMeta):
     """
     Class representing the digit sum operator.
 
@@ -411,7 +413,7 @@ class DigitSum(Unary):
 
 
 # 'SIGN_MINUS'
-class SignMinus(Unary):
+class SignMinus(Unary, metaclass=SingletonMeta):
     """
     Class representing the sign minus operator.
 
