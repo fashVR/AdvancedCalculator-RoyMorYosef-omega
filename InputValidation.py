@@ -3,6 +3,15 @@ from OperatorFactory import *
 
 
 def check_parentheses(expression_list):
+    """
+    Checks for mismatched or empty parentheses in an expression list.
+
+    This function iterates through each character in the expression list to ensure that all parentheses are
+    correctly matched and none are empty. It raises an error if it finds mismatched or empty parentheses.
+
+    :param expression_list: A list of strings representing mathematical expression elements.
+    :raises ParenthesesMismatchError: If mismatched parentheses are found, specifying the type of mismatch.
+    """
     open_parentheses_count = 0
 
     index = 0
@@ -24,31 +33,3 @@ def check_parentheses(expression_list):
         raise ParenthesesMismatchError("Mismatched parentheses: missing closing parenthesis", len(expression_list))
 
 
-def check_valid_nums(expression_list):
-    if not expression_list:
-        raise ValueError("input empty")
-
-    def is_valid_number(num):
-
-        has_decimal = False
-        has_digit = False
-
-        for char in num:
-            if char.isdigit():
-                has_digit = True
-            elif char == '.':
-                if has_decimal:
-                    raise InvalidNumberError("a number cannot have more than 1 decimal point", num)
-                elif not has_digit:
-                    raise InvalidNumberError("a number must have a value before the decimal point", num)
-
-                has_decimal = True
-            else:
-                raise InvalidNumberError("invalid character in number", num)
-        return True
-
-    op_factory = OperatorFactory()
-    for item in expression_list:
-        if item in op_factory.operators or item in ['(', ')']:
-            continue
-        is_valid_number(item)
