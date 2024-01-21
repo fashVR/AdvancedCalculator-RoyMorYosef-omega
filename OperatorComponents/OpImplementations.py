@@ -1,4 +1,6 @@
 # OpImplementations.py
+import math
+
 from Calculator.CustomeExceptions import *
 from OperatorComponents.SingletonMeta import *
 
@@ -200,9 +202,12 @@ class Power(Binary, metaclass=SingletonMeta):
         :return: The result of raising operand1 to the power of operand2.
         :raises ZeroDivisionError: If operand1 is 0 and operand2 is negative.
         """
+        if operand1 < 0 and 1 > operand2 > -1:
+            raise OperatorError(f"cannot handle imaginary numbers", self)
+
         if operand1 == 0 and operand2 < 0:
             raise ZeroDivisionError(f"0 cant be raised ny a negative number: ({operand2})")
-        return operand1 ** operand2
+        return math.pow(operand1,operand2)
 
 
 # 'UNARY_MINUS'
@@ -384,10 +389,10 @@ class Factorial(Unary, metaclass=SingletonMeta):
 
         """
         if operand < 0:
-            raise OperatorError("Factorial is not defined for negative numbers", self)
+            raise OperatorError("Unary operator cant perform operation on negative numbers", self)
 
         if operand != int(operand):
-            raise OperatorError("Factorial is not defined for non-integer numbers", self)
+            raise OperatorError("Unary operator cant perform operation on decimal numbers", self)
 
         result = 1
         for i in range(1, int(operand) + 1):
@@ -418,6 +423,8 @@ class DigitSum(Unary, metaclass=SingletonMeta):
         :param operand: The operand whose digits are to be summed.
         :return: The sum of the digits of the operand.
         """
+        if operand < 0:
+            raise OperatorError("Unary operator cant perform operation on negative numbers", self)
         digits = [int(char) for char in str(operand) if char.isdigit()]
         return sum(digits)
 

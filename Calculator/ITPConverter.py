@@ -130,7 +130,7 @@ class ITPConverter:
                                 check_stackable = False
                             else:
                                 raise OperatorError(f"Error: non repeatable operator at index {i}", optr)
-                    if isinstance(optr, Unary) and check_stackable and latest_operator_inserted not in ['(', ')', '']:
+                    if isinstance(optr, Unary) and check_stackable and infix_expression_list[i-1] not in ['(', ')', '']:
                         if isinstance(operator_factory.get_operator(latest_operator_inserted), Unary):
                             if operator_factory.get_operator(latest_operator_inserted).associativity == Unary.LEFT:
                                 if optr.associativity == Unary.LEFT:
