@@ -3,68 +3,62 @@ from OperatorComponents.OperatorFactory import *
 
 class ITPConverter:
     """
-    A class for converting infix expressions to postfix expressions and evaluating them.
-
-    This class includes methods for converting a string representation of an arithmetic expression into a list,
-    cleaning and validating this list, transforming it into a postfix format, and finally evaluating the postfix expression.
+    A class for converting lists containing infix expressions to postfix expressions and evaluating them.
     """
 
     @staticmethod
-    def analyze_minuses(char_list):
+    def analyze_minuses(expression_list: list):
         """
         updates the minus signs in an expression list to differentiate between unary, binary and sign minus.
+        This method internally uses two helper functions: 'is_binary_minus' and 'is_unary'.
 
-        This method goes through the expression list and decides whether a minus sign should be considered
-        as a unary minus, a binary minus, or a sign minus based on the context in which it appears.
-        it uses two helper functions: 'is_operator_first' and 'is_unary' to aid in this analysis.
-
-        :param char_list: The list representation of an expression where minus signs are to be analyzed.
+        :param expression_list: The list representing a mathematical expression in infix form.
         :return: The updated list with the minus signs correctly identified as unary or binary.
         """
         operator_factory = OperatorFactory()
+        operators = operator_factory.operators
 
-        def is_binary_minus(index):
+        def is_binary_minus(index: int):
             """
             determines whether a minus in a certain index is placed as a binary minus
             :param index: the index of the minus we want to analyze.
             :return: True if it is placed as binary, False if not
             """
-            if char_list[index - 1][0].isdigit() or char_list[index - 1] in [')']:
+            if expression_list[index - 1][0].isdigit() or expression_list[index - 1] in [')']:
                 return True
-            elif char_list[index - 1] in operator_factory.operators:
-                left_op = operator_factory.get_operator(char_list[index - 1])
+            elif expression_list[index - 1] in operators:
+                left_op = operator_factory.get_operator(expression_list[index - 1])
                 if isinstance(left_op, Unary):
                     if left_op.associativity == Unary.RIGHT:
                         return True
             return False
 
-        def is_unary(index):
+        def is_unary(index: int):
             """
-            checks if minus operator as a certain index should be unary.
+            checks if minus operator in a certain index should be unary.
             :param index: the index of the minus being checked
-            :return: returns true if it's the first character of the expression,if the character to its left is a unary minus ot if its the first character in the brackets it's in.
+            :return: returns true if it is the first character of the expression,if the character to its left is a unary
+            minus or if it is the first character in the brackets it is in.
             """
-            return index == 0 or char_list[index - 1] == 'UNARY_MINUS' or char_list[index - 1] == '('
+            return index == 0 or expression_list[index - 1] == 'UNARY_MINUS' or expression_list[index - 1] == '('
 
         current_index = 0
 
-        while current_index < len(char_list):
-            if char_list[current_index] == '-':
+        while current_index < len(expression_list):
+            if expression_list[current_index] == '-':
                 if is_unary(current_index):
-                    char_list[current_index] = 'UNARY_MINUS'
+                    expression_list[current_index] = 'UNARY_MINUS'
 
                 elif not is_binary_minus(current_index):
-                    char_list[current_index] = 'SIGN_MINUS'
+                    expression_list[current_index] = 'SIGN_MINUS'
             current_index += 1
 
-        return char_list
-
     @staticmethod
-    def to_postfix(infix_expression):
+    def to_postfix(infix_expression_list: list):
         """
-        this function converts a list representing an expression in infix form to a postfix expression list.
+        this function converts a list representing an expression in infix form to its postfix form.
         it uses 2 helper function: compare_precedence and insert_operator to perform this process.
-        :param infix_expression:
+        :param infix_expression_list:
         :return: a list representing the infix expression in postfix form
         :raises OperatorError: if it discovers an attempt to stack on an operator a non 'stackable_on_others' operator,
         or an attempt to repeat a non 'Repeatable' operator.
@@ -72,7 +66,7 @@ class ITPConverter:
 
         operator_factory = OperatorFactory()
 
-        def compare_precedence(op1, op2):
+        def compare_precedence(op1: float, op2: float):
             """
             compares the precedence of 2 operators.
             :param op1: the first operator
@@ -99,42 +93,52 @@ class ITPConverter:
                     insert_position = i + 1
                     break
 
-            # Insert the operator at the found position
             op_stack.insert(insert_position, char)
 
         op_stack = []
         postfix = []
         latest_operator_inserted = ''
-        for i, char in enumerate(infix_expression):
+        for i, char in enumerate(infix_expression_list):
+            # adds digits directly to postfix expression
             if char[0].isdigit():
                 postfix.append(char)
             elif char in ['(', ')']:
+                # adds '(' directly to postfix expression
                 if char == '(':
                     op_stack.append(char)
                 else:
+                    # when it reaches ')' it adds to the postfix all the operators in the operator stack until
+                    # reaching its matching brackets.
                     while op_stack and op_stack[-1] != '(':
                         postfix.append(op_stack.pop())
                     op_stack.pop()
             else:
                 if op_stack:
                     optr = operator_factory.get_operator(char)
-                    iterate_as_normal = True
-                    check_stackble = True
+                    # dont_stack_unary_operator determines if a unary operator requires insertion to the stack in a way
+                    # it will be executed in combination of an other unary operator (for example: ~-1)
+                    dont_stack_unary_operator = True
+                    # dont_stack_unary_operator determines if an unary operator requires a check whether or not its
+                    # performed in combination with an other unary operator.
+                    check_stackable = True
                     if latest_operator_inserted == char:
                         if isinstance(optr, Unary):
                             if optr.repeatable:
-                                iterate_as_normal = False
-                                check_stackble = False
+                                # a unary operator is repeated upon instance of himself thus it requires stacking.
+                                dont_stack_unary_operator = False
+                                # no need to check if its stackable, we already know its repeatable and is repeated.
+                                check_stackable = False
                             else:
                                 raise OperatorError(f"Error: non repeatable operator at index {i}", optr)
-                    if isinstance(optr, Unary) and check_stackble:
+                    if isinstance(optr, Unary) and check_stackable and latest_operator_inserted not in ['(', ')', '']:
                         if isinstance(operator_factory.get_operator(latest_operator_inserted), Unary):
                             if operator_factory.get_operator(latest_operator_inserted).associativity == Unary.LEFT:
                                 if optr.associativity == Unary.LEFT:
                                     if operator_factory.get_operator(latest_operator_inserted).stackable_on_others:
-                                        iterate_as_normal = False
+                                        # an instance of stacking two left unary operators.
+                                        dont_stack_unary_operator = False
                                     else:
-                                        raise OperatorError(f"Error: can't stack operator at index {i-1} on others",
+                                        raise OperatorError(f"Error: can't stack operator at index {i - 1} on others",
                                                             operator_factory.get_operator(
                                                                 latest_operator_inserted))
                             elif operator_factory.get_operator(
@@ -143,8 +147,10 @@ class ITPConverter:
                                     if not optr.stackable_on_others:
                                         raise OperatorError(f"Error: can't stack operator at index {i} on others",
                                                             optr)
+                                    # an instance of stacking two right unary operators. right unary stacking does
+                                    # not require special insertion to the stack.
 
-                    if iterate_as_normal:
+                    if dont_stack_unary_operator:
                         while op_stack and op_stack[-1] != '(' and compare_precedence(op_stack[-1], char):
                             postfix.append(op_stack.pop())
                 insert_operator()
@@ -155,10 +161,10 @@ class ITPConverter:
         return postfix
 
     @staticmethod
-    def evaluate_postfix(postfix_expression):
+    def evaluate_postfix(postfix_expression_list: list):
         """
         evaluates a list representing a postfix expression.
-        :param postfix_expression: the list representing the postfix expression
+        :param postfix_expression_list: the list representing the postfix expression
         :return: the result of calculation of postfix expression.
         :raises: OperatorError: when it detects an incorrect use of an operator. usually when the stack does not
         contain the operands needed for an operator to operate.
@@ -168,7 +174,7 @@ class ITPConverter:
         operator_factory = OperatorFactory()
         operand_stack = []
 
-        for char in postfix_expression:
+        for char in postfix_expression_list:
             if char[0].isdigit():
                 operand_stack.append(float(char))
             else:
@@ -186,5 +192,7 @@ class ITPConverter:
                 except IndexError:
                     raise OperatorError(f"Incorrect use of operator", operator)
                 operand_stack.append(result)
-        print(operand_stack)
-        return operand_stack.pop()
+        res = operand_stack.pop()
+        rounded_result = "{:.10f}".format(res)
+        rounded_result = float(rounded_result)
+        return rounded_result

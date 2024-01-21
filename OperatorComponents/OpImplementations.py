@@ -15,7 +15,7 @@ class Operator:
         self.precedence = precedence
         self.name = name
 
-    def operate(self, *args):
+    def operate(self, *args: float):
         """
         Abstract method to be implemented by subclasses for performing the operation.
 
@@ -30,9 +30,10 @@ class Unary(Operator):
     Base class for unary operators.
 
     :param precedence: The precedence level of the operator.
-    :param associativity: The associativity property of the operator ('Left' or 'Right').
-    :param repeatable: Indicates if the operator is repeatable.
-    :param stackable_on_others: Indicates if the operator can be stacked on other operators.
+    :param associativity: The associativity property of the operator ('LEFT' or 'RIGHT').
+    :param repeatable: Indicates if the operator is repeatable. meaning it can be used consecutively (for example: --1).
+    :param stackable_on_others: Indicates if the operator can be stacked on other operators
+    (for example: ~-1 | '~' is stacked on '-')
     :param name: The display name of the operator.
     :raises ValueError: If the provided associativity is not valid.
     """
@@ -48,7 +49,7 @@ class Unary(Operator):
         self.associativity = associativity
         self.repeatable = repeatable
 
-    def operate(self, operand):
+    def operate(self, operand: float):
         """
         Method to perform the unary operation.
 
@@ -69,7 +70,7 @@ class Binary(Operator):
     def __init__(self, precedence, name):
         super().__init__(precedence, name)
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Method to perform the binary operation.
 
@@ -92,7 +93,7 @@ class Add(Binary, metaclass=SingletonMeta):
     def __init__(self):
         super().__init__(precedence=1, name="Plus: (+)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs addition operation on two operands.
 
@@ -117,7 +118,7 @@ class BinaryMinus(Binary, metaclass=SingletonMeta):
     def __init__(self):
         super().__init__(precedence=1, name='Minus: (-)')
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs subtraction operation on two operands.
 
@@ -140,7 +141,7 @@ class Multiply(Binary, metaclass=SingletonMeta):
     def __init__(self):
         super().__init__(precedence=2, name="Multiplication: (*)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs multiplication operation on two operands.
 
@@ -163,7 +164,7 @@ class Divide(Binary, metaclass=SingletonMeta):
     def __init__(self):
         super().__init__(precedence=2, name="Division: (/)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs division operation on two operands.
 
@@ -190,7 +191,7 @@ class Power(Binary, metaclass=SingletonMeta):
     def __init__(self):
         super().__init__(precedence=3, name="Power: (^)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs exponentiation operation on two operands.
 
@@ -215,17 +216,17 @@ class UnaryMinus(Unary, metaclass=SingletonMeta):
         :param stackable_on_others: Indicates if the operator can be stacked on other operators, set to False.
         :param name: The display name of the operator, set to "Minus: (-)".
         """
-    def __init__(self):
 
+    def __init__(self):
         super().__init__(precedence=2.5, associativity='Left', repeatable=True, stackable_on_others=False,
                          name='Minus: (-)')
 
-    def operate(self, operand):
+    def operate(self, operand: float):
         """
         Negates the given operand.
 
-        :param operand: The operand to negate.
-        :return: The negated value of the operand.
+        :param operand: The operand to make negative.
+        :return: The negative value of the operand.
         """
         return -operand
 
@@ -238,10 +239,11 @@ class Modulus(Binary, metaclass=SingletonMeta):
     :param precedence: The precedence level of the operator, set to 4.
     :param name: The display name of the operator, set to "Modulus: (%)".
     """
+
     def __init__(self):
         super().__init__(precedence=4, name="Modulus: (-)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Performs modulus operation on two operands.
 
@@ -249,7 +251,9 @@ class Modulus(Binary, metaclass=SingletonMeta):
         :param operand2: The second operand.
         :return: The modulus of operand1 by operand2.
         """
-        return operand1 % operand2
+
+        result = operand1 % operand2
+        return result
 
 
 # '@'
@@ -260,10 +264,11 @@ class Avg(Binary, metaclass=SingletonMeta):
     :param precedence: The precedence level of the operator, set to 5.
     :param name: The display name of the operator, set to "Average: (@)".
     """
+
     def __init__(self):
         super().__init__(precedence=5, name="Average: (@)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Calculates the average of two operands.
 
@@ -282,10 +287,11 @@ class Max(Binary, metaclass=SingletonMeta):
     :param precedence: The precedence level of the operator, set to 5.
     :param name: The display name of the operator, set to "Maximum: ($)".
     """
+
     def __init__(self):
         super().__init__(precedence=5, name="Maximum: ($)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Determines the maximum of two operands.
 
@@ -300,17 +306,18 @@ class Max(Binary, metaclass=SingletonMeta):
 
 
 # '&'
-class Min(Operator, metaclass=SingletonMeta):
+class Min(Binary, metaclass=SingletonMeta):
     """
     Class representing the minimum operator.
 
     :param precedence: The precedence level of the operator, set to 5.
     :param name: The display name of the operator, set to "Minimum: (&)".
     """
+
     def __init__(self):
         super().__init__(precedence=5, name="Minimum: (&)")
 
-    def operate(self, operand1, operand2):
+    def operate(self, operand1: float, operand2: float):
         """
         Determines the minimum of two operands.
 
@@ -335,11 +342,12 @@ class Tilde(Unary, metaclass=SingletonMeta):
     :param stackable_on_others: Indicates if the operator can be stacked on other operators, set to True.
     :param name: The display name of the operator, set to "Tilde: (~)".
     """
+
     def __init__(self):
         super().__init__(precedence=6, associativity='Left', repeatable=False, stackable_on_others=True,
                          name="Tilde: (~)")
 
-    def operate(self, operand):
+    def operate(self, operand: float):
         """
         Negates the given operand.
 
@@ -361,11 +369,12 @@ class Factorial(Unary, metaclass=SingletonMeta):
     :param name: The display name of the operator, set to "Factorial: (!)".
 
     """
+
     def __init__(self):
         super().__init__(precedence=6, associativity='Right', repeatable=True, stackable_on_others=True,
                          name="Factorial: (!)")
 
-    def operate(self, operand1):
+    def operate(self, operand: float):
         """
         Calculates the factorial of the given operand.
 
@@ -374,14 +383,14 @@ class Factorial(Unary, metaclass=SingletonMeta):
         :raises OperatorError: If the operand is negative or not an integer.
 
         """
-        if operand1 < 0:
+        if operand < 0:
             raise OperatorError("Factorial is not defined for negative numbers", self)
 
-        if operand1 != int(operand1):
+        if operand != int(operand):
             raise OperatorError("Factorial is not defined for non-integer numbers", self)
 
         result = 1
-        for i in range(1, int(operand1) + 1):
+        for i in range(1, int(operand) + 1):
             result *= i
         return result
 
@@ -397,11 +406,12 @@ class DigitSum(Unary, metaclass=SingletonMeta):
     :param stackable_on_others: Indicates if the operator can be stacked on other operators, set to True.
     :param name: The display name of the operator, set to "Digits Sum: (#)".
     """
+
     def __init__(self):
         super().__init__(precedence=6, associativity='Right', repeatable=True, stackable_on_others=True,
                          name='Digits Sum: (#)')
 
-    def operate(self, operand):
+    def operate(self, operand: float):
         """
         Calculates the sum of the digits of the given operand.
 
@@ -428,11 +438,11 @@ class SignMinus(Unary, metaclass=SingletonMeta):
         super().__init__(precedence=8, associativity='Left', repeatable=True, stackable_on_others=False,
                          name='Minus: (-)')
 
-    def operate(self, operand):
+    def operate(self, operand: float):
         """
         Negates the given operand.
 
-        :param operand: The operand to negate.
-        :return: The negated value of the operand.
+        :param operand: The operand to make negative.
+        :return: The negative value of the operand.
         """
         return -operand

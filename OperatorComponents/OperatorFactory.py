@@ -7,16 +7,12 @@ class OperatorFactory(metaclass= SingletonMeta):
     A factory class for creating instances of operator classes. This class follows the Singleton design pattern
     to ensure only one instance exists throughout the program. It holds a mapping of operator symbols
     to their corresponding operator classes and provides a method to instantiate these classes.
-
-    :param metaclass: The metaclass used for the Singleton pattern.
     """
     def __init__(self):
         """
         Initializes the OperatorFactory with a predefined set of operator mappings.
         The mappings include symbols for various operators such as addition, subtraction, multiplication,
-        division, power... it initializes all the operator classes so when retrieving them there will remain only one
-        instance of an operator created.
-        :param operators: A dictionary mapping operator symbols (str) to their operator classes.
+        division, power...
         """
         self.operators = {
             "+": Add,
@@ -35,7 +31,7 @@ class OperatorFactory(metaclass= SingletonMeta):
             "SIGN_MINUS": SignMinus
         }
 
-    def get_operator(self, operator_symbol):
+    def get_operator(self, operator_symbol: str):
         """
         Retrieves and instantiates the operator class associated with the given symbol.
 
