@@ -105,7 +105,7 @@ class ITPConverter:
         op_stack = []
         postfix = []
         latest_operator_inserted = ''
-        for char in infix_expression:
+        for i, char in enumerate(infix_expression):
             if char[0].isdigit():
                 postfix.append(char)
             elif char in ['(', ')']:
@@ -126,7 +126,7 @@ class ITPConverter:
                                 iterate_as_normal = False
                                 check_stackble = False
                             else:
-                                raise OperatorError("Error: non repeatable operator", optr)
+                                raise OperatorError(f"Error: non repeatable operator at index {i}", optr)
                     if isinstance(optr, Unary) and check_stackble:
                         if isinstance(operator_factory.get_operator(latest_operator_inserted), Unary):
                             if operator_factory.get_operator(latest_operator_inserted).associativity == Unary.LEFT:
@@ -134,14 +134,15 @@ class ITPConverter:
                                     if operator_factory.get_operator(latest_operator_inserted).stackable_on_others:
                                         iterate_as_normal = False
                                     else:
-                                        raise OperatorError("Error: can't stack this operator on others",
+                                        raise OperatorError(f"Error: can't stack operator at index {i-1} on others",
                                                             operator_factory.get_operator(
                                                                 latest_operator_inserted))
                             elif operator_factory.get_operator(
                                     latest_operator_inserted).associativity == Unary.RIGHT:
                                 if optr.associativity == Unary.RIGHT:
                                     if not optr.stackable_on_others:
-                                        raise OperatorError("Error: can't stack this operator on others", optr)
+                                        raise OperatorError(f"Error: can't stack operator at index {i} on others",
+                                                            optr)
 
                     if iterate_as_normal:
                         while op_stack and op_stack[-1] != '(' and compare_precedence(op_stack[-1], char):
