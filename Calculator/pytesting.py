@@ -1,5 +1,6 @@
 import pytest
 from Calculator import main
+from Calculator.CustomeExceptions import *
 
 
 @pytest.mark.parametrize("expression, expected_result", [
@@ -34,7 +35,7 @@ from Calculator import main
     ("-4^2 +3! - ~2& 6 / 2", -9),
     ("~-2!+(4)!# / 3 - 9.2 % 9", 3.8),
     ("2--3*2^3! # + 6.9*23", 352.7),
-    ("89 * 2--6#-(--4^3)#!", -3628628),
+    ("89 * 2---6#-(--4^3)#!", -3628628),
     ("4^2^2---6!  + (1 + --1 -1 +1)", -462),
     ("9.99^ 2 + 4-12.5# / 3 - 6", 95.1334333333),
     ("19/ 2 - (44 ---3^2 /7) + 16", -17.2142857143),
@@ -42,10 +43,9 @@ from Calculator import main
     ("(90099# - 982#)# / 7 + --2! ", 3.1428571429),
     ("(4##)#!# + 5!# - ~ - 7", 2),
     ("((23- 7) - (1)!*(2*(3)!!#)#)", 7),
-    ("(~---3! & (8/ 1.4))  @ 9", 7.3571428571),
+    ("(~---3! & (8/ 1.4))  @ 9", 7.3571428572),
     ("--7 - 9 + ~ 2 - 6 / 3 + ~- 4", -2),
     ("(2-(-2-(2-2)))! / 7.235 + 98", 101.3172080166)
-
 
 ])
 def test_valid_expressions(expression, expected_result):
@@ -54,7 +54,37 @@ def test_valid_expressions(expression, expected_result):
         processed_expression, res = main.calculate(expression)
         assert res == expected_result
 
-    except Exception as e:
-        print("Caught")
 
+    except ParenthesesMismatchError as e:
 
+        print(f"Error | {e}. Mismatch found at index {e.index}")
+
+    except OverflowError:
+
+        print(f"Error | Result too large")
+
+    except InvalidNumberError as e:
+
+        print(f"Error | {e} - Item: {e.invalid_num}")
+
+    except OperatorError as e:
+
+        print(f"Error | {e} - operator: {e.op.name}")
+
+    except KeyboardInterrupt:
+
+        print("Stopping the program.")
+
+        return
+
+    except EOFError:
+
+        print(f"Error | End Of File Error")
+
+    except ZeroDivisionError as e:
+
+        print(f"Error | {e}")
+
+    except ValueError as e:
+
+        print(f"Error | {e}")

@@ -10,6 +10,7 @@ def calculate(expression):
 
     InputValidationUtilz.check_parentheses(expression_list)
     ITPConverter.analyze_minuses(expression_list)
+    print(expression_list)
     InputValidationUtilz.validate_unary_operators(expression_list)
     post_fixed = ITPConverter.to_postfix(expression_list)
     result = ITPConverter.evaluate_postfix(post_fixed)
@@ -18,7 +19,7 @@ def calculate(expression):
 
 
 def main():
-    while True:
+
         try:
             infix_expression = input("Insert an expression (insert stop in order to stop): \n")
             if infix_expression == 'stop':

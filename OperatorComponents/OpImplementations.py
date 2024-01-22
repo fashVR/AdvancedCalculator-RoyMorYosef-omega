@@ -256,7 +256,8 @@ class Modulus(Binary, metaclass=SingletonMeta):
         :param operand2: The second operand.
         :return: The modulus of operand1 by operand2.
         """
-
+        if operand2 == 0:
+            raise OperatorError(f"modulus by zero is not allowed", self)
         result = operand1 % operand2
         return result
 
@@ -425,6 +426,8 @@ class DigitSum(Unary, metaclass=SingletonMeta):
         """
         if operand < 0:
             raise OperatorError("Unary operator cant perform operation on negative numbers", self)
+        if 'e' in str(operand):
+            raise OperatorError("Cant calculate the sum of digits, number is represented with a scientific notation", self)
         digits = [int(char) for char in str(operand) if char.isdigit()]
         return sum(digits)
 

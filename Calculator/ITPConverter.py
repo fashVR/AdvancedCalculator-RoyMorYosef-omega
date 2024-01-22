@@ -130,8 +130,10 @@ class ITPConverter:
                                 check_stackable = False
                             else:
                                 raise OperatorError(f"Error: non repeatable operator at index {i}", optr)
-                    if isinstance(optr, Unary) and check_stackable and infix_expression_list[i-1] not in ['(', ')', '']:
-                        if isinstance(operator_factory.get_operator(latest_operator_inserted), Unary):
+                    if i > 0 and isinstance(optr, Unary) and check_stackable and infix_expression_list[i - 1] not in [
+                        '(', ')', '']:
+                        if latest_operator_inserted and isinstance(
+                                operator_factory.get_operator(latest_operator_inserted), Unary):
                             if operator_factory.get_operator(latest_operator_inserted).associativity == Unary.LEFT:
                                 if optr.associativity == Unary.LEFT:
                                     if operator_factory.get_operator(latest_operator_inserted).stackable_on_others:
@@ -191,8 +193,7 @@ class ITPConverter:
 
                 except IndexError:
                     raise OperatorError(f"Incorrect use of operator", operator)
+                result = round(result, 10)
                 operand_stack.append(result)
-        res = operand_stack.pop()
-        rounded_result = "{:.10f}".format(res)
-        rounded_result = float(rounded_result)
-        return rounded_result
+        res = float(operand_stack.pop())
+        return res

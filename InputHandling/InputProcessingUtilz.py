@@ -59,8 +59,12 @@ class InputProcessingUtilz:
             raise ValueError("The input list is empty.")
 
         for i, item in enumerate(input_list):
+
             if item not in operators and item not in ('(', ')'):
                 try:
                     input_list[i] = str(float(item))
+                    if input_list[i] == 'inf':
+                        raise InvalidNumberError(f"", '')
+
                 except ValueError:
-                    raise InvalidNumberError(f"Invalid number:", item)
+                    raise InvalidNumberError(f"Invalid number:", input_list[i])
