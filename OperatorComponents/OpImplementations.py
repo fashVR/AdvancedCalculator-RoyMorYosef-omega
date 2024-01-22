@@ -424,11 +424,16 @@ class DigitSum(Unary, metaclass=SingletonMeta):
         :param operand: The operand whose digits are to be summed.
         :return: The sum of the digits of the operand.
         """
-        if operand < 0:
-            raise OperatorError("Unary operator cant perform operation on negative numbers", self)
-        if 'e' in str(operand):
-            raise OperatorError("Cant calculate the sum of digits, number is represented with a scientific notation", self)
-        digits = [int(char) for char in str(operand) if char.isdigit()]
+        try:
+            if operand < 0:
+                raise OperatorError("Unary operator cant perform operation on negative numbers", self)
+            if 'e' in str(operand):
+                raise Warning("number is represented with a scientific notation, result may not be accurate")
+        except Warning as e:
+            print(e)
+        str_op = str(operand)
+        str_op = str_op[0:str_op.index('e')]
+        digits = [int(char) for char in str_op if char.isdigit()]
         return sum(digits)
 
 

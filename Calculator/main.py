@@ -19,7 +19,7 @@ def calculate(expression):
 
 
 def main():
-
+    while True:
         try:
             infix_expression = input("Insert an expression (insert stop in order to stop): \n")
             if infix_expression == 'stop':
@@ -46,6 +46,8 @@ def main():
             print(f"Error | {e}")
         except ValueError as e:
             print(f"Error | {e}")
+
+
 
 
 if __name__ == "__main__":
