@@ -432,7 +432,8 @@ class DigitSum(Unary, metaclass=SingletonMeta):
         except Warning as e:
             print(e)
         str_op = str(operand)
-        str_op = str_op[0:str_op.index('e')]
+        if 'e' in str_op:
+            str_op = str_op[0:str_op.index('e')]
         digits = [int(char) for char in str_op if char.isdigit()]
         return sum(digits)
 

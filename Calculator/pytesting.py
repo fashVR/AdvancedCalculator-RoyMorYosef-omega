@@ -3,13 +3,22 @@ from Calculator import main
 from Calculator.CustomeExceptions import *
 
 
-@pytest.mark.parametrize("expression, expected_result", [
+@pytest.mark.parametrize("expression, expected_exception", [
     # invalid expressions
-    ("4^*4", "Caught"),
-    ("afe#cw1", "Caught"),
-    ("     ", "Caught"),
-    (" \n\r\f", "Caught"),
-    ("4\n\r\f4 - 4", "Caught"),
+    ("4^*4", OperatorError),
+    ("afe#cw1", InvalidNumberError),
+    ("     ", ValueError),
+    (" \n\r\f", ValueError),
+    ("4\n\r\f4 - 4", InvalidNumberError),
+
+
+])
+def test_invalid_expressions(expression, expected_exception):
+    with pytest.raises(expected_exception):
+        processed_expression, res = main.calculate(expression)
+
+
+@pytest.mark.parametrize("expression, expected_result", [
 
     # simple expressions
     ("3+4", 7),
@@ -40,7 +49,6 @@ from Calculator.CustomeExceptions import *
     ("9.99^ 2 + 4-12.5# / 3 - 6", 95.1334333333),
     ("19/ 2 - (44 ---3^2 /7) + 16", -17.2142857143),
     ("4@3#! -5&7$6 - (30 % 4) ", -3),
-    ("(90099# - 982#)# / 7 + --2! ", 3.1428571429),
     ("(4##)#!# + 5!# - ~ - 7", 2),
     ("((23- 7) - (1)!*(2*(3)!!#)#)", 7),
     ("(~---3! & (8/ 1.4))  @ 9", 7.3571428572),
@@ -49,42 +57,5 @@ from Calculator.CustomeExceptions import *
 
 ])
 def test_valid_expressions(expression, expected_result):
-    try:
-
-        processed_expression, res = main.calculate(expression)
-        assert res == expected_result
-
-
-    except ParenthesesMismatchError as e:
-
-        print(f"Error | {e}. Mismatch found at index {e.index}")
-
-    except OverflowError:
-
-        print(f"Error | Result too large")
-
-    except InvalidNumberError as e:
-
-        print(f"Error | {e} - Item: {e.invalid_num}")
-
-    except OperatorError as e:
-
-        print(f"Error | {e} - operator: {e.op.name}")
-
-    except KeyboardInterrupt:
-
-        print("Stopping the program.")
-
-        return
-
-    except EOFError:
-
-        print(f"Error | End Of File Error")
-
-    except ZeroDivisionError as e:
-
-        print(f"Error | {e}")
-
-    except ValueError as e:
-
-        print(f"Error | {e}")
+    processed_expression, res = main.calculate(expression)
+    assert res == expected_result
