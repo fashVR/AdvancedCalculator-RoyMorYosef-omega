@@ -15,7 +15,7 @@ from Calculator.CustomeExceptions import *
 ])
 def test_invalid_expressions(expression, expected_exception):
     with pytest.raises(expected_exception):
-        processed_expression, res = main.calculate(expression)
+        main.calculate(expression)
 
 
 @pytest.mark.parametrize("expression, expected_result", [
